@@ -336,11 +336,26 @@ function updateRecentList() {
         if (!displayTime && record.category === 'outdoor' && record.startTime) {
             displayTime = record.startTime;
         }
+        // Get duration text for recent list
+        let durationText = '';
+        if (record.category === 'sleep' && record.sleepStart && record.sleepEnd) {
+            const start = timeToMinutes(record.sleepStart);
+            const end = timeToMinutes(record.sleepEnd);
+            let duration = end >= start ? end - start : (end + 1440) - start;
+            const hours = Math.floor(duration / 60);
+            const mins = duration % 60;
+            durationText = hours > 0 ? `${hours}h${mins > 0 ? mins + 'min' : ''}` : `${mins}min`;
+        }
+        if (record.category === 'outdoor' && record.durationMinutes) {
+            const hours = Math.floor(record.durationMinutes / 60);
+            const mins = record.durationMinutes % 60;
+            durationText = hours > 0 ? `${hours}h${mins > 0 ? mins + 'min' : ''}` : `${mins}min`;
+        }
         return `
             <div class="recent-card" data-id="${record.id}">
                 <span class="recent-time">${displayTime || '--:--'}</span>
                 <span class="recent-icon">${cat.icon}</span>
-                <span class="recent-summary">${getRecordSummary(record)}</span>
+                <span class="recent-summary"><span class="recent-summary">${getRecordSummary(record)}${durationText ? ' ' + durationText : ''}</span></span>
             </div>
         `;
     }).join('');
@@ -612,7 +627,14 @@ function hideDetailSheet() {
 
 function getDetailHTML(record) {
     const lines = [];
-    lines.push(`<div class="detail-item"><span class="detail-label">时间</span><span class="detail-value">${record.time}</span></div>`);
+    let displayTime = record.time;
+    if (!displayTime && record.category === 'sleep' && record.sleepStart) {
+        displayTime = record.sleepStart;
+    }
+    if (!displayTime && record.category === 'outdoor' && record.startTime) {
+        displayTime = record.startTime;
+    }
+    lines.push(`<div class="detail-item"><span class="detail-label">时间</span><span class="detail-value">${displayTime || '--:--'}</span></div>`);
     
     switch (record.category) {
         case 'milk':
