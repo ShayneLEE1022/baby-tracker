@@ -405,7 +405,7 @@ function updateTimeline() {
         if (record.category === 'outdoor' && record.durationMinutes) {
             const hours = Math.floor(record.durationMinutes / 60);
             const mins = record.durationMinutes % 60;
-            durationText = hours > 0 ? `${hours}小时${mins > 0 ? mins + '分钟' : ''}` : `${mins}分钟`;
+            durationText = hours > 0 ? `${hours}h${mins > 0 ? mins + 'min' : ''}` : `${mins}min`;
         }
         
         return `
