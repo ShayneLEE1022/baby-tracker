@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>婴儿作息记录</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Page 1: Quick Record -->
+        <div id="page-home" class="page active">
+            <div class="greeting-area">
+                <div class="greeting-date" id="greeting-date"></div>
+                <div class="greeting-text" id="greeting-text"></div>
+                <div class="baby-info">
+                    <div class="baby-avatar">👶</div>
+                    <span class="baby-name" id="baby-name">年年</span>
+                </div>
+            </div>
+            <div class="voice-area">
+                <button class="voice-btn" id="voice-btn" aria-label="语音输入">
+                    <span class="voice-icon">🎤</span>
+                </button>
+                <p class="voice-hint">点击说话，自动识别记录内容</p>
+                <div class="voice-result" id="voice-result" style="display:none;">
+                    <div class="voice-result-card">
+                        <span id="voice-result-text"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="category-area">
+                <div class="category-scroll">
+                    <div class="category-card" data-category="milk" style="--cat-color: #FFB5A7;">
+                        <div class="category-icon">🍼</div>
+                        <div class="category-name">奶量</div>
+                        <div class="category-badge" id="badge-milk">0</div>
+                    </div>
+                    <div class="category-card" data-category="food" style="--cat-color: #FFAB76;">
+                        <div class="category-icon">🥣</div>
+                        <div class="category-name">辅食</div>
+                        <div class="category-badge" id="badge-food">0</div>
+                    </div>
+                    <div class="category-card" data-category="diaper" style="--cat-color: #A8E6CF;">
+                        <div class="category-icon">👶</div>
+                        <div class="category-name">尿布</div>
+                        <div class="category-badge" id="badge-diaper">0</div>
+                    </div>
+                    <div class="category-card" data-category="sleep" style="--cat-color: #C3B1E1;">
+                        <div class="category-icon">😴</div>
+                        <div class="category-name">睡眠</div>
+                        <div class="category-badge" id="badge-sleep">0</div>
+                    </div>
+                    <div class="category-card" data-category="supplement" style="--cat-color: #FFEAA7;">
+                        <div class="category-icon">💊</div>
+                        <div class="category-name">补剂</div>
+                        <div class="category-badge" id="badge-supplement">0</div>
+                    </div>
+                    <div class="category-card" data-category="outdoor" style="--cat-color: #A8D8EA;">
+                        <div class="category-icon">🏠</div>
+                        <div class="category-name">外出</div>
+                        <div class="category-badge" id="badge-outdoor">0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="recent-area">
+                <div class="recent-header">
+                    <span class="recent-title">最近记录</span>
+                    <span class="recent-view-all" id="btn-view-all">查看全部 ›</span>
+                </div>
+                <div class="recent-list" id="recent-list"></div>
+                <div class="empty-state" id="home-empty" style="display:none;">
+                    <div class="empty-icon">📝</div>
+                    <p class="empty-text">还没有记录，试试语音或点击上方分类开始吧</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 2: Timeline -->
+        <div id="page-timeline" class="page">
+            <div class="date-selector-area">
+                <button class="date-arrow" id="date-prev">‹</button>
+                <div class="date-display" id="date-display">
+                    <span class="date-label" id="date-label">今天 · 5月15日</span>
+                </div>
+                <button class="date-arrow" id="date-next">›</button>
+            </div>
+            <div class="stats-area">
+                <div class="stats-scroll">
+                    <div class="stat-card">
+                        <div class="stat-icon">🍼</div>
+                        <div class="stat-label">总奶量</div>
+                        <div class="stat-value" id="stat-milk">0ml</div>
+                        <div class="stat-compare" id="stat-milk-compare">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🥣</div>
+                        <div class="stat-label">辅食次数</div>
+                        <div class="stat-value" id="stat-food">0次</div>
+                        <div class="stat-compare" id="stat-food-compare">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">😴</div>
+                        <div class="stat-label">总睡眠</div>
+                        <div class="stat-value" id="stat-sleep">0h</div>
+                        <div class="stat-compare" id="stat-sleep-compare">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">👶</div>
+                        <div class="stat-label">尿布次数</div>
+                        <div class="stat-value" id="stat-diaper">0次</div>
+                        <div class="stat-compare" id="stat-diaper-compare">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🏠</div>
+                        <div class="stat-label">外出时长</div>
+                        <div class="stat-value" id="stat-outdoor">0min</div>
+                        <div class="stat-compare" id="stat-outdoor-compare">—</div>
+                    </div>
+                </div>
+            </div>
+            <div class="timeline-area">
+                <div class="timeline-list" id="timeline-list"></div>
+                <div class="empty-state" id="timeline-empty" style="display:none;">
+                    <div class="empty-icon">📅</div>
+                    <p class="empty-text">这一天还没有记录</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Tab Bar -->
+        <nav class="tab-bar">
+            <div class="tab-item active" data-tab="home">
+                <span class="tab-icon">🏠</span>
+                <span class="tab-label">记录</span>
+            </div>
+            <div class="tab-item" data-tab="timeline">
+                <span class="tab-icon">📋</span>
+                <span class="tab-label">时间轴</span>
+            </div>
+        </nav>
+
+        <!-- Sheet Overlay -->
+        <div class="sheet-overlay" id="sheet-overlay"></div>
+
+        <!-- Record Sheet -->
+        <div class="bottom-sheet" id="bottom-sheet">
+            <div class="sheet-handle"></div>
+            <div class="sheet-header">
+                <span class="sheet-title" id="sheet-title">记录</span>
+                <button class="sheet-close" id="sheet-close">✕</button>
+            </div>
+            <div class="sheet-body" id="sheet-body"></div>
+            <div class="sheet-footer">
+                <button class="sheet-save" id="sheet-save">保存</button>
+            </div>
+        </div>
+
+        <!-- Detail Sheet -->
+        <div class="bottom-sheet" id="detail-sheet">
+            <div class="sheet-handle"></div>
+            <div class="sheet-header">
+                <span class="sheet-title" id="detail-sheet-title">记录详情</span>
+                <button class="sheet-close" id="detail-sheet-close">✕</button>
+            </div>
+            <div class="sheet-body" id="detail-sheet-body"></div>
+            <div class="sheet-footer">
+                <button class="sheet-delete" id="detail-sheet-delete">删除</button>
+                <button class="sheet-save" id="detail-sheet-edit">编辑</button>
+            </div>
+        </div>
+
+        <!-- Voice Modal -->
+        <div class="voice-modal" id="voice-modal">
+            <div class="voice-modal-content">
+                <div class="voice-modal-icon">🎤</div>
+                <p class="voice-modal-status" id="voice-modal-status">正在聆听...</p>
+                <p class="voice-modal-text" id="voice-modal-text"></p>
+                <button class="voice-modal-stop" id="voice-modal-stop">停止录音</button>
+            </div>
+        </div>
+
+        <!-- Toast -->
+        <div class="toast" id="toast">记录成功</div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
