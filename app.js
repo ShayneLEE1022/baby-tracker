@@ -27,10 +27,6 @@ const FORM_TEMPLATES = {
         </div>
         <div class="form-group">
             <label class="form-label">喂养方式</label>
-            <input type="date" class="form-input" data-field="recordDate" value="${getDateKey(selectedDate)}">
-        </div>
-        <div class="form-group">
-            <label class="form-label">喂养方式</label>
             <div class="radio-group" data-field="method">
                 <div class="radio-item" data-value="breast">母乳</div>
                 <div class="radio-item" data-value="formula">配方奶</div>
