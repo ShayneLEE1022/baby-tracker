@@ -22,6 +22,14 @@ let currentEditCategory = null;
 const FORM_TEMPLATES = {
     milk: () => `
         <div class="form-group">
+            <label class="form-label">记录日期</label>
+            <input type="date" class="form-input" data-field="recordDate" value="${getDateKey(new Date())}">
+        </div>
+        <div class="form-group">
+            <label class="form-label">喂养方式</label>
+            <input type="date" class="form-input" data-field="recordDate" value="${getDateKey(selectedDate)}">
+        </div>
+        <div class="form-group">
             <label class="form-label">喂养方式</label>
             <div class="radio-group" data-field="method">
                 <div class="radio-item" data-value="breast">母乳</div>
@@ -55,6 +63,10 @@ const FORM_TEMPLATES = {
         </div>
     `,
     food: () => `
+        <div class="form-group">
+            <label class="form-label">记录日期</label>
+            <input type="date" class="form-input" data-field="recordDate" value="${getDateKey(new Date())}">
+        </div>
         <div class="form-group">
             <label class="form-label">食物名称</label>
             <input type="text" class="form-input" data-field="foodName" placeholder="如"米糊"、"南瓜泥"">
@@ -95,6 +107,10 @@ const FORM_TEMPLATES = {
     `,
     diaper: () => `
         <div class="form-group">
+            <label class="form-label">记录日期</label>
+            <input type="date" class="form-input" data-field="recordDate" value="${getDateKey(new Date())}">
+        </div>
+        <div class="form-group">
             <label class="form-label">尿布类型</label>
             <div class="checkbox-group" data-field="diaperType">
                 <div class="checkbox-item" data-value="wet">湿尿布</div>
@@ -121,6 +137,10 @@ const FORM_TEMPLATES = {
         </div>
     `,
     sleep: () => `
+        <div class="form-group">
+            <label class="form-label">记录日期</label>
+            <input type="date" class="form-input" data-field="recordDate" value="${getDateKey(new Date())}">
+        </div>
         <div class="form-row">
             <div class="form-group">
                 <label class="form-label">入睡时间</label>
@@ -145,6 +165,10 @@ const FORM_TEMPLATES = {
         </div>
     `,
     supplement: () => `
+        <div class="form-group">
+            <label class="form-label">记录日期</label>
+            <input type="date" class="form-input" data-field="recordDate" value="${getDateKey(new Date())}">
+        </div>
         <div class="form-group">
             <label class="form-label">补剂名称</label>
             <div class="radio-group" data-field="supplementName">
@@ -173,6 +197,10 @@ const FORM_TEMPLATES = {
         </div>
     `,
     outdoor: () => `
+        <div class="form-group">
+            <label class="form-label">记录日期</label>
+            <input type="date" class="form-input" data-field="recordDate" value="${getDateKey(new Date())}">
+        </div>
         <div class="form-group">
             <label class="form-label">外出类型</label>
             <div class="radio-group" data-field="outdoorType">
@@ -252,7 +280,10 @@ function saveRecords() {
 
 function addRecord(record) {
     record.id = Date.now();
-    record.date = getDateKey(new Date());
+    // Use provided date or default to today
+    if (!record.date) {
+        record.date = getDateKey(new Date());
+    }
     records.unshift(record);
     saveRecords();
     updateUI();
@@ -355,7 +386,7 @@ function updateRecentList() {
             <div class="recent-card" data-id="${record.id}">
                 <span class="recent-time">${displayTime || '--:--'}</span>
                 <span class="recent-icon">${cat.icon}</span>
-                <span class="recent-summary"><span class="recent-summary">${getRecordSummary(record)}${durationText ? ' ' + durationText : ''}</span></span>
+                <span class="recent-summary">${getRecordSummary(record)}${durationText ? ' ' + durationText : ''}</span>
             </div>
         `;
     }).join('');
@@ -405,7 +436,7 @@ function updateTimeline() {
         if (record.category === 'outdoor' && record.durationMinutes) {
             const hours = Math.floor(record.durationMinutes / 60);
             const mins = record.durationMinutes % 60;
-            durationText = hours > 0 ? `${hours}h${mins > 0 ? mins + 'min' : ''}` : `${mins}min`;
+            durationText = hours > 0 ? `${hours}小时${mins > 0 ? mins + '分钟' : ''}` : `${mins}分钟`;
         }
         
         return `
@@ -431,11 +462,10 @@ function updateTimeline() {
 }
 
 function updateStats() {
-    const today = new Date();
-    const yesterday = new Date(today);
+    const yesterday = new Date(selectedDate);
     yesterday.setDate(yesterday.getDate() - 1);
     
-    const todayRecords = getRecordsForDate(today);
+    const todayRecords = getRecordsForDate(selectedDate);
     const yesterdayRecords = getRecordsForDate(yesterday);
     
     // Milk
@@ -548,8 +578,8 @@ function getRecordTitle(record) {
         case 'food':
             return record.foodName || '辅食';
         case 'diaper':
-            const types = (record.diaperType || []).map(t => t === 'wet' ? '湿尿布' : t === 'poop' ? '便便' : '干爽').join('+');
-            return types || '尿布';
+            const types = (record.diaperType || []).map(t => t === 'wet' ? '湿尿布' : t === 'poop' ? '便便' : '干爽');
+            return types.join('+') || '尿布';
         case 'sleep':
             if (record.sleepStart && record.sleepEnd) {
                 const start = timeToMinutes(record.sleepStart);
@@ -627,6 +657,7 @@ function hideDetailSheet() {
 
 function getDetailHTML(record) {
     const lines = [];
+    // Handle time display for different categories
     let displayTime = record.time;
     if (!displayTime && record.category === 'sleep' && record.sleepStart) {
         displayTime = record.sleepStart;
@@ -700,6 +731,8 @@ function getDetailHTML(record) {
             const outdoorTypes = { walk: '散步', stroller: '推车', playground: '游乐场', hospital: '就医', other: '其他' };
             lines.push(`<div class="detail-item"><span class="detail-label">类型</span><span class="detail-value">${outdoorTypes[record.outdoorType]}</span></div>`);
             if (record.startTime && record.endTime) {
+                lines.push(`<div class="detail-item"><span class="detail-label">开始时间</span><span class="detail-value">${record.startTime}</span></div>`);
+                lines.push(`<div class="detail-item"><span class="detail-label">结束时间</span><span class="detail-value">${record.endTime}</span></div>`);
                 lines.push(`<div class="detail-item"><span class="detail-label">时长</span><span class="detail-value">${record.durationMinutes || 0}分钟</span></div>`);
             }
             break;
@@ -829,6 +862,15 @@ function collectFormData() {
     if (currentEditCategory === 'sleep' && data.sleepStart) {
         data.time = data.sleepStart;
     }
+    // Set time field for outdoor records (use startTime as the main time)
+    if (currentEditCategory === 'outdoor' && data.startTime) {
+        data.time = data.startTime;
+    }
+    
+    // Use selected date if provided
+    if (data.recordDate) {
+        data.date = data.recordDate;
+    }
     
     return data;
 }
@@ -840,176 +882,48 @@ function showToast(message) {
     setTimeout(() => toast.classList.remove('show'), 2000);
 }
 
-// Voice Input using Web Speech API
-let recognition = null;
-let isRecording = false;
-
-// Check if browser supports speech recognition
-function isSpeechSupported() {
-    const supported = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
-    console.log('Speech recognition supported:', supported);
-    return supported;
-}
-
-// Initialize speech recognition - create new instance each time for Safari compatibility
-function createRecognition() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    
-    if (!SpeechRecognition) {
-        console.log('浏览器不支持语音识别');
-        return null;
-    }
-    
-    const rec = new SpeechRecognition();
-    rec.continuous = false;
-    rec.interimResults = true;
-    rec.lang = 'zh-CN';
-    
-    return rec;
-}
+// Voice Input (Simulated)
+let voiceTimeout = null;
 
 function startVoiceInput() {
     const modal = document.getElementById('voice-modal');
     const status = document.getElementById('voice-modal-status');
     const text = document.getElementById('voice-modal-text');
     
-    console.log('Starting voice input...');
-    
-    // Check if browser supports speech recognition
-    if (!isSpeechSupported()) {
-        console.error('Speech recognition not supported');
-        showToast('您的浏览器不支持语音识别');
-        return;
-    }
-    
-    // Create new recognition instance (required for Safari)
-    recognition = createRecognition();
-    console.log('Recognition instance created:', recognition);
-    
-    if (!recognition) {
-        console.error('Failed to create recognition instance');
-        showToast('语音识别初始化失败');
-        return;
-    }
-    
     modal.classList.add('active');
-    status.textContent = '正在聆听，请说话...';
+    status.textContent = '正在聆听...';
     text.textContent = '';
-    isRecording = true;
     
-    let finalTranscript = '';
-    let hasResult = false;
-    
-    recognition.onresult = (event) => {
-        hasResult = true;
-        let interimTranscript = '';
-        
-        console.log('Recognition result:', event);
-        
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-            const transcript = event.results[i][0].transcript;
-            console.log('Transcript:', transcript, 'isFinal:', event.results[i].isFinal);
-            if (event.results[i].isFinal) {
-                finalTranscript += transcript;
-            } else {
-                interimTranscript += transcript;
-            }
-        }
-        
-        text.textContent = interimTranscript || finalTranscript;
-    };
-    
-    recognition.onerror = (event) => {
-        console.error('语音识别错误:', event.error);
-        isRecording = false;
-        
-        if (event.error === 'not-allowed') {
-            status.textContent = '请允许麦克风权限';
-            showToast('请允许麦克风权限');
-        } else if (event.error === 'no-speech') {
-            status.textContent = '没有检测到语音';
-            showToast('没有检测到语音，请重试');
-        } else if (event.error === 'network') {
-            status.textContent = '网络错误，请检查网络';
-            showToast('网络错误，请检查网络连接');
-        } else {
-            status.textContent = '识别失败: ' + event.error;
-            showToast('识别出错，请重试');
-        }
-        
-        setTimeout(() => {
-            stopVoiceInput();
-        }, 2000);
-    };
-    
-    recognition.onend = () => {
-        if (isRecording) {
-            if (finalTranscript && hasResult) {
-                // Process the recognized text
-                processVoiceResult(finalTranscript);
-            } else {
-                status.textContent = '未识别到内容';
-                setTimeout(() => {
-                    stopVoiceInput();
-                }, 1500);
-            }
-        }
-        isRecording = false;
-    };
-    
-    // For Safari: use a small delay to ensure the modal is visible
-    setTimeout(() => {
-        try {
-            console.log('Starting recognition...');
-            recognition.start();
-            console.log('Recognition started successfully');
-        } catch (e) {
-            console.error('启动语音识别失败:', e);
-            status.textContent = '启动失败: ' + e.message;
-            showToast('启动语音识别失败: ' + e.message);
-            setTimeout(stopVoiceInput, 2000);
-        }
-    }, 100);
-}
-
-function processVoiceResult(text) {
-    const modal = document.getElementById('voice-modal');
-    const status = document.getElementById('voice-modal-status');
-    
-    status.textContent = '识别完成';
-    
-    // Show result
-    const voiceResult = document.getElementById('voice-result');
-    const voiceResultText = document.getElementById('voice-result-text');
-    voiceResult.style.display = 'block';
-    voiceResultText.textContent = text;
-    
-    // Parse and show form
-    const parsed = parseVoiceInput(text);
-    
-    setTimeout(() => {
+    // Simulate voice recognition after 3 seconds
+    voiceTimeout = setTimeout(() => {
         stopVoiceInput();
         
+        // Parse the simulated text
+        const simulatedTexts = [
+            '刚喝了120毫升奶',
+            '换了尿布是湿的',
+            '睡了1个半小时',
+            '吃了南瓜泥大部分'
+        ];
+        const result = simulatedTexts[Math.floor(Math.random() * simulatedTexts.length)];
+        
+        const voiceResult = document.getElementById('voice-result');
+        const voiceResultText = document.getElementById('voice-result-text');
+        voiceResult.style.display = 'block';
+        voiceResultText.textContent = result;
+        
+        // Parse and show form
+        const parsed = parseVoiceInput(result);
         if (parsed.category) {
             showSheet(parsed.category);
+            // Pre-fill the form based on parsed data
             setTimeout(() => prefillForm(parsed), 100);
-        } else {
-            showToast('未能识别记录类型，请手动选择');
         }
-    }, 500);
+    }, 3000);
 }
 
 function stopVoiceInput() {
-    isRecording = false;
-    
-    if (recognition) {
-        try {
-            recognition.stop();
-        } catch (e) {
-            // Ignore errors when stopping
-        }
-    }
-    
+    clearTimeout(voiceTimeout);
     const modal = document.getElementById('voice-modal');
     modal.classList.remove('active');
 }
@@ -1154,21 +1068,6 @@ function init() {
     loadRecords();
     initEventListeners();
     updateUI();
-    
-    // Check speech support and update UI
-    if (!isSpeechSupported()) {
-        const voiceBtn = document.getElementById('voice-btn');
-        const voiceHint = document.querySelector('.voice-hint');
-        if (voiceBtn) {
-            voiceBtn.style.opacity = '0.5';
-            voiceBtn.style.pointerEvents = 'none';
-        }
-        if (voiceHint) {
-            voiceHint.textContent = '当前浏览器不支持语音输入';
-            voiceHint.style.color = '#999';
-        }
-        console.log('当前浏览器不支持Web Speech API');
-    }
 }
 
 // Start the app
